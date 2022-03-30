@@ -1,0 +1,39 @@
+[package]
+name = "file-store-example"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+reqwest = { version = "0.11", features = ["stream","blocking"] }
+gloo-file = "0.2.1"
+yew = { version = "0.19.3" }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+js-sys = "0.3.56"
+log = "0.4"
+wasm-logger = "0.2"
+wasm-bindgen-futures = "0.4"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+  "Headers",
+  "Request",
+  "RequestInit",
+  "RequestMode",
+  "Response",
+  "Window",
+  "Element",
+  "DomTokenList",
+  "HtmlSelectElement",
+  "HtmlDocument",
+  "BinaryType",
+  "Blob",
+  "ErrorEvent",
+  "CloseEvent",
+  "FileReader",
+  "MessageEvent",
+  "ProgressEvent",
+  "WebSocket",
+]
