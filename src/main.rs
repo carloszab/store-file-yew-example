@@ -7,8 +7,6 @@ use wasm_bindgen_futures::spawn_local;
 use web_sys::{Event, HtmlInputElement};
 use yew::{html, html::TargetCast, Component, Context, Html};
 
-
-
 type Chunks = bool;
 
 #[derive(Debug)]
@@ -25,35 +23,19 @@ pub struct App {
     read_bytes: bool,
 }
 
-async fn store_file(file: Vec<u8>) -> Result<(), Box<dyn std::error::Error>> {
+async fn store_file(file: Vec<u8>) -> Result<reqwest::Response, reqwest::Error> {
     let mut headers = HeaderMap::new();
     headers.insert("Content-Type", "image/png".parse().unwrap());
     headers.insert("x-ms-blob-type", "BlockBlob".parse().unwrap());
-    // headers.insert("Content-Length", file.metadata().unwrap().len().to_string().parse().unwrap());
 
-    // let body = if let Ok(mut f) = std::fs::File::open("assets/avatar.png") {
-    //     let mut buffer = vec![0; f.metadata().unwrap().len() as usize];
-    //     if let Ok(_) = f.read(&mut buffer) {
-    //         Some(buffer)
-    //     } else {None}
-    // } else {None};
-
-    let body = Some(file);
-
-    if body.is_some() {
-        let client = reqwest::Client::new();
-        let res = client
-            .put("url")
-            .headers(headers)
-            .body(body.unwrap())
-            .send()
-            .await?;
-    
-        println!("response: {:?}", res);
-    } else {
-        println!("error al procesar archivo")
-    }
-    Ok(())
+    let client = reqwest::Client::new();
+    let res = client
+        .put("Azure Storage Blob Service SAS URL")
+        .headers(headers)
+        .body(file)
+        .send()
+        .await;
+    res
 }
 
 impl Component for App {
@@ -70,27 +52,23 @@ impl Component for App {
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         info!("msg: {:?}", msg);
-        println!("msg: {:?}", msg);
         match msg {
             Msg::Loaded(file_name, data) => {
                 let info = format!("file_name: {}, data: {:?}", file_name, data);
                 self.files.push(info);
-                // info!("loaded file_name: {}, data: {:?}", file_name, data);
                 self.readers.remove(&file_name);
                 true
             }
             Msg::LoadedBytes(file_name, data) => {
                 let info = format!("file_name: {}, data: {:?}", file_name, data);
                 self.files.push(info);
-                // info!("loaded bytes file_name: {}, data: {:?}", file_name, data);
                 self.readers.remove(&file_name);
 
                 spawn_local(async move {
                     let response = store_file(data).await;
-                    // let response = reset_credential_request(vars).await;
                     match response {
-                        Ok(msg) => info!("storeFile ok: {:?}", msg),
-                        Err(_e) => {},
+                        Ok(msg) => info!("store_file ok: {:?}", msg),
+                        Err(e) => info!("store_file error: {:?}", e)
                     }
                 });
 
